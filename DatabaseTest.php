@@ -66,16 +66,25 @@ class DatabaseTest
             'SELECT name FROM users WHERE `user_id` IN (1, 2, 3) AND block = 1',
         ];
 
+        $hasError = false;
+
         // Выводим результаты
         foreach ($results as $key => $result) {
+            echo 'Test ' . ($key + 1) . ' (';
             if ($result !== $correct[$key]) {
-                echo 'Failure';
+                $hasError = true;
+
+                echo "\033[31mfailure\033[0m";
             } else {
-                echo 'Success';
+                echo "\033[32msuccess\033[0m";
             }
-            echo ' ' . ($key + 1) . ':' . PHP_EOL;
+            echo '):' . PHP_EOL;
             echo 'Result: ' . $result . PHP_EOL;
             echo 'Correct: ' . $correct[$key] . PHP_EOL . PHP_EOL;
+        }
+
+        if ($hasError) {
+            throw new Exception('Test failed');
         }
     }
 }
