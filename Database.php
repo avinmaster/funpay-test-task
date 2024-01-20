@@ -9,20 +9,18 @@ class Database implements DatabaseInterface
 {
     private mysqli $mysqli;
 
+    public const ARG_SYMBOL = '?';
     public const SPECIFIER_INTEGER = 'd';
     public const SPECIFIER_FLOAT = 'f';
     public const SPECIFIER_ARRAY = 'a';
     public const SPECIFIER_IDENTIFIER = '#';
-    public const SKIP_VALUE = 'SKIP';
-    public const ARG_SYMBOL = '?';
-
     public const SPECIFIERS = [
         self::SPECIFIER_INTEGER,
         self::SPECIFIER_FLOAT,
         self::SPECIFIER_ARRAY,
         self::SPECIFIER_IDENTIFIER,
     ];
-
+    public const SKIP_VALUE = 'SKIP';
     public const OPENING_BLOCK_DELIMITER = '{';
     public const CLOSING_BLOCK_DELIMITER = '}';
 
