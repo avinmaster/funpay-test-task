@@ -14,6 +14,7 @@ class Database implements DatabaseInterface
     public const SPECIFIER_ARRAY = 'a';
     public const SPECIFIER_IDENTIFIER = '#';
     public const SKIP_VALUE = 'SKIP';
+    public const ARG_SYMBOL = '?';
 
     public const SPECIFIERS = [
         self::SPECIFIER_INTEGER,
@@ -107,14 +108,14 @@ class Database implements DatabaseInterface
     /**
      * Собирает запрос из шаблона запроса и параметров.
      * Нужно обязательно соблюдать порядок следования параметров в запросе.
-     * @param string $query - запрос с плейсхолдерами вида "?", "?d", "?f", "?a", "?#"
+     * @param string $query - запрос с плейсхолдерами вида "?", "?d", "?f", "?a", "?#" (виды по умолчанию)
      * @param array $args - массив параметров для подстановки в запрос
      * @return string - собранный запрос
      * @throws Exception
      */
     public function buildQuery(string $query, array $args = []): string
     {
-        $parts = explode('?', $query);
+        $parts = explode(self::ARG_SYMBOL, $query);
         $result = [$parts[0]];
 
         $isSkipExists = false;
