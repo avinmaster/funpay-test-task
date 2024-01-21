@@ -63,7 +63,7 @@ class Database implements DatabaseInterface
 
     /**
      * Возвращает специальное значение. Если это значение будет передано в качестве параметра в метод buildQuery,
-     * то блок "{...}" не попадает в сформированный запрос.
+     * то блок "{...}" не попадает в сформированный запрос
      * @return Skip
      */
     public function skip(): Skip
@@ -88,12 +88,12 @@ class Database implements DatabaseInterface
             case self::SPECIFIER_ARRAY:
                 if (!is_array($value)) throw new Exception('Parameter with specifier "a" must be an array');
 
-                // Если массив ассоциативный, то преобразуем его в строку вида "key1 = value1, key2 = value2"
+                // Если массив не ассоциативный, то преобразуем его в строку вида "value1, value2"
                 if (array_keys($value) === range(0, count($value) - 1)) {
                     return implode(', ', array_map(function ($v) {
                         return $this->escapeValue($v);
                     }, $value));
-                } else { // иначе, обрабатываем как массив со значениями
+                } else { // Иначе преобразуем его в строку вида "key1 = value1, key2 = value2"
                     $pairs = [];
                     foreach ($value as $k => $v) {
                         $pairs[] = $this->escapeIdentifier($k) . ' = ' . $this->escapeValue($v);
@@ -115,8 +115,8 @@ class Database implements DatabaseInterface
     }
 
     /**
-     * Собирает запрос из шаблона запроса и параметров.
-     * Нужно обязательно соблюдать порядок следования параметров в запросе.
+     * Собирает запрос из шаблона запроса и параметров
+     * Нужно обязательно соблюдать порядок следования параметров в запросе
      * @param string $query - запрос с плейсхолдерами вида "?", "?d", "?f", "?a", "?#" (виды по умолчанию)
      * @param array $args - массив параметров для подстановки в запрос
      * @return string - собранный запрос
@@ -128,6 +128,8 @@ class Database implements DatabaseInterface
         $result = [$parts[0]];
 
         $isSkipArgExists = false;
+        // Делим запрос на части и вставляем параметры с помощью метода formatQuery
+        // Проверку на skip делаем в цикле, чтобы не делать лишних итераций
         foreach ($args as $i => $arg) {
             $isSkipArgExists = $isSkipArgExists || $arg instanceof Skip;
 
@@ -142,7 +144,7 @@ class Database implements DatabaseInterface
 
         // Перед тем, как начать работу над фигурными скобками поискал и нашел инфу по синтаксису с их использованием. Это не очень хорошо работает:
         // https://dev.mysql.com/doc/refman/8.0/en/expressions.html
-        // Но да, это используется редко.
+        // Но да, это используется редко
         $wholeResult = implode('', $result);
         if ($isSkipArgExists) {
             // Удаляем блоки вида "{...}"
