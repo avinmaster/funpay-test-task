@@ -20,13 +20,14 @@ class Database implements DatabaseInterface
         self::SPECIFIER_ARRAY,
         self::SPECIFIER_IDENTIFIER,
     ];
-    public const SKIP_VALUE = 'SKIP';
     public const OPENING_BLOCK_DELIMITER = '{';
     public const CLOSING_BLOCK_DELIMITER = '}';
+    private Skip $skipClass;
 
     public function __construct(mysqli $mysqli)
     {
         $this->mysqli = $mysqli;
+        $this->skipClass = new Skip();
     }
 
     /**
@@ -40,11 +41,11 @@ class Database implements DatabaseInterface
         if ($value === null) {
             return 'NULL';
         } elseif (is_string($value)) {
-            return "'" . $this->mysqli->escape_string($value) . "'";
+            return "'" . $this->mysqli->escape_string($value) . "'"; // пример: 'Jack'
         } elseif (is_float($value) || is_int($value)) {
-            return $value;
+            return $value; // пример: 1.5, 1
         } elseif (is_bool($value)) {
-            return $value ? 1 : 0;
+            return $value ? 1 : 0; // пример: 1, 0
         } else {
             throw new Exception('Unsupported parameter type');
         }
@@ -57,7 +58,17 @@ class Database implements DatabaseInterface
      */
     public function escapeIdentifier($value): string
     {
-        return '`' . str_replace('`', '``', $value) . '`';
+        return '`' . str_replace('`', '``', $value) . '`'; // пример: `user_id`
+    }
+
+    /**
+     * Возвращает специальное значение. Если это значение будет передано в качестве параметра в метод buildQuery,
+     * то блок "{...}" не попадает в сформированный запрос.
+     * @return Skip
+     */
+    public function skip(): Skip
+    {
+        return $this->skipClass;
     }
 
     /**
@@ -116,9 +127,9 @@ class Database implements DatabaseInterface
         $parts = explode(self::ARG_SYMBOL, $query);
         $result = [$parts[0]];
 
-        $isSkipExists = false;
+        $isSkipArgExists = false;
         foreach ($args as $i => $arg) {
-            $isSkipExists = $arg === $this->skip();
+            $isSkipArgExists = $isSkipArgExists || $arg instanceof Skip;
 
             $specifier = null;
             if (isset($parts[$i + 1][0]) && in_array($parts[$i + 1][0], self::SPECIFIERS)) {
@@ -133,13 +144,15 @@ class Database implements DatabaseInterface
         // https://dev.mysql.com/doc/refman/8.0/en/expressions.html
         // Но да, это используется редко.
         $wholeResult = implode('', $result);
-        if ($isSkipExists) {
+        if ($isSkipArgExists) {
+            // Удаляем блоки вида "{...}"
             $wholeResult = preg_replace(
                 '/[' . self::OPENING_BLOCK_DELIMITER . '].*[' . self::CLOSING_BLOCK_DELIMITER . ']/',
                 '',
                 $wholeResult
             );
         } else {
+            // Удаляем символы вида "{", "}" и оставляем содержимое блоков
             $wholeResult = preg_replace(
                 '/[' . self::OPENING_BLOCK_DELIMITER . self::CLOSING_BLOCK_DELIMITER . ']/',
                 '',
@@ -148,16 +161,5 @@ class Database implements DatabaseInterface
         }
 
         return $wholeResult;
-    }
-
-    /**
-     * Возвращает специальное значение. Если это значение будет передано в качестве параметра в метод buildQuery,
-     * то блок "{...}" не попадает в сформированный запрос.
-     * @return string
-     */
-    public function skip(): string
-    {
-        // не совсем понял, что нужно сделать в этом методе
-        return self::SKIP_VALUE;
     }
 }
