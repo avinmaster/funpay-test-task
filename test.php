@@ -6,7 +6,7 @@ use FpDbTest\DatabaseTest;
 /**
  * @throws Exception
  */
-function autoload($class)
+function autoload($class): void
 {
     $a = array_slice(explode('\\', $class), 1);
     if (!$a) {
