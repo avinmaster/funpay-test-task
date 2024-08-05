@@ -1,6 +1,6 @@
 <?php
 
-namespace FpDbTest;
+namespace FpDbTest\src\Utilities;
 
 /**
  * Пустой класс для маркировки пропуска блока
